@@ -1,2 +1,11 @@
-./.idea
-./football.iml
+target
+*.iml
+out/
+.idea
+.classpath
+.project
+.settings/
+bin/
+/downloader.js
+.DS_Store
+log/
