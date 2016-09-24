@@ -1,6 +1,6 @@
 package com.xuxue.football.spider
 
-import com.xuxue.football.servlet.Game
+import com.xuxue.football.servlet.{Game, Odds}
 import redis.clients.jedis.Jedis
 
 /**
