@@ -32,6 +32,14 @@
           <version>2.11.0-M4</version>
       </dependency>
 
+      <!-- https://mvnrepository.com/artifact/com.github.etaty/rediscala_2.11 -->
+      <dependency>
+          <groupId>com.github.etaty</groupId>
+          <artifactId>rediscala_2.11</artifactId>
+          <version>1.6.0</version>
+      </dependency>
+
+
       <!-- https://mvnrepository.com/artifact/org.apache.httpcomponents/httpclient -->
       <dependency>
           <groupId>org.apache.httpcomponents</groupId>

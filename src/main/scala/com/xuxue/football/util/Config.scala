@@ -9,7 +9,7 @@ import com.xuxue.football.util.Loan.use
   */
 class Config(val redisPort:Int,val redisHost:String,
              val mysqlURL:String,val mysqlUser:String
-            ,val mysqlPassword:String) {
+            ,val mysqlPassword:String,val filterMap:String) {
   override def toString = s"Config($redisPort, $redisHost, $mysqlURL, $mysqlUser, $mysqlPassword)"
 }
 
@@ -26,7 +26,8 @@ object Config{
           properties.getProperty("redis_host"),
           properties.getProperty("mysql_url"),
           properties.getProperty("mysql_user"),
-          properties.getProperty("mysql_password"))
+          properties.getProperty("mysql_password"),
+          properties.getProperty("football_filter_map"))
     }
   }
   def main(args: Array[String]): Unit = {
