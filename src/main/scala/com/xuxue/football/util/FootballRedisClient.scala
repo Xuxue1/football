@@ -17,35 +17,35 @@ class FootballRedisClient(val config:Config) {
     redis
   }
   
-  @tailrec
+
   final def filter(odds: Odds):Boolean={
-    val result=Try{
-      redis.hget(config.filterMap,odds.source+"_"+odds.id+"_"+odds.company+"_"+odds.oddsType)
-    }
-    result match {
-      case Success(v)=>{
-       true
-      }
-      case Failure(e)=>{
-        redis=reconnectRedis(0).get
-        filter(odds)
-      }
-    }
+      val status=getOddsStatus(odds)
+      if(status.equals("1")) true else false
   }
   
-  private def updeateMap(odds: Odds,value:String):Boolean={
+  def updateMap(odds: Odds,value:String):Boolean={
     redis.hset(config.filterMap,getOddsKey(odds),value)
     true
   }
   
-  private def deleteMap(odds: Odds):Boolean={
+  def deleteMap(odds: Odds):Boolean={
+    redis.hdel(config.filterMap,getOddsKey(odds))
     true
+  }
+
+  private def getOddsStatus(odds: Odds):String={
+    redis.hget(config.filterMap,getOddsKey(odds))
   }
   
   private def getOddsKey(odds: Odds):String={
     odds.source+"_"+odds.id+"_"+odds.company+"_"+odds.oddsType
   }
-  
+
+  /**
+    *
+    * @param num
+    * @return
+    */
   @tailrec
   final def reconnectRedis(num:Int):Try[Jedis]={
     val result=Try{
