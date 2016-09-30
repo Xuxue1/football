@@ -21,11 +21,13 @@ class Game {
   var danchang:Int=0;       //是否单场
   var zucai:Int=0;          //是否是足彩
   var turn:String=null;      //轮次
+  var processStatus:Int=0; //处理的状态  1代表访问完game页面  2访问完赔率和盘口页面
+  var flage=0;//这个比赛是不是这个页面的最后一个比赛
   var odds:util.HashSet[Odds]=new util.HashSet[Odds](); //比分
   def addOdds(odds:Odds):Game={
     this.odds.add(odds)
     this
   }
-
   override def toString = s"Game(id=$id, source=$source, game=$game, gameTime=$gameTime, status=$status, morder=$morder, mteam=$mteam, score=$score, oteam=$oteam, oorder=$oorder, jingcai=$jingcai, danchang=$danchang, zucai=$zucai, turn=$turn, odds=$odds)"
 }
+

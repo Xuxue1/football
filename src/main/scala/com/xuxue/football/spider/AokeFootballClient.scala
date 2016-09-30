@@ -28,7 +28,7 @@ class AokeFootballClient {
 
     val client = HttpClients.custom().build()
 
-    val dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+    val dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
 
     /**
       * 请求这个日期对应的球探网足球赔率所对应的页面 返回这个页面的所有
@@ -64,6 +64,9 @@ class AokeFootballClient {
                 case Failure(ex)=>{
                     LOG.info("A game failed parse because "+ex.getMessage,ex)
                 }
+                case Success(v)=>{
+                    //do nothing
+                }
             }
             value
         }
@@ -95,6 +98,9 @@ class AokeFootballClient {
             case Failure(ex)=>{
                 LOG.info("A game failed request odds because "+ex.getMessage,ex)
             }
+            case Success(v)=>{
+                //do nothing
+            }
         }
         value
     }
@@ -116,6 +122,9 @@ class AokeFootballClient {
         value match {
             case Failure(ex)=>{
                 LOG.info("A game failed request panKou because "+ex.getMessage,ex)
+            }
+            case Success(v)=>{
+                //do nothing
             }
         }
         value
@@ -223,7 +232,7 @@ class AokeFootballClient {
 
         Try {
             val calendar = new GregorianCalendar()
-            calendar.setTime(new Date())
+            calendar.setTime(date)
             calendar.add(Calendar.HOUR, -(hour.get))
             calendar.add(Calendar.MINUTE, -(minute.get))
             calendar.getTime
@@ -250,6 +259,7 @@ class AokeFootballClient {
                 odds.id = game.id
                 odds.company = companyName
                 val date = parseOddsTime(tds.get(2).attr("title"), game.gameTime)
+                LOG.warn(tds.get(2).attr("title")+"    "+dateFormat.format(date.get))
                 odds.time = date match {
                     case Success(v) => v
                     case Failure(ex) => {
