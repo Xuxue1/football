@@ -5,31 +5,37 @@ use football;
 create table game(
     source int,
     id int,
-    game int,
-    leaglue int,
+    leaglue varchar(15),
     gametime datetime,
-    status int,
+    status varchar(5),
     morder varchar(10),
-    mteam int,
-    score int,
-    oteam int,
+    mteam varchar(15),
+    score varchar(15),
+    oteam varchar(15),
     oorder varchar(10),
     jingcai int,
     danchang int,
     zucai int,
-    turn int,
+    turn varchar(15),
     primary key(source,id)
+);
+
+
+create table aoke_pankou(
+    name varchar(15),
+    value int,
+    primary key(name)
 );
 
 create table odds(
     source int,
     id int,
-    company int,
+    company varchar(15),
     type int,
     updateTime datetime,
-    d1 double,
-    d2 double,
-    d3 double,
+    d1 varchar(10),
+    d2 varchar(10),
+    d3 varchar(10),
     primary key(source,id,company,type)
 );
 
@@ -39,3 +45,5 @@ create table map(
     name varchar(20),
     primary key(id,type)
 );
+
+
