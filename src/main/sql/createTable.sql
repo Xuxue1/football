@@ -30,12 +30,12 @@ create table aoke_pankou(
 create table odds(
     source int,
     id int,
-    company varchar(15),
+    company int,
     type int,
     updateTime datetime,
-    d1 varchar(10),
-    d2 varchar(10),
-    d3 varchar(10),
+    d1 double,
+    d2 DOUBLE ,
+    d3 DOUBLE,
     primary key(source,id,company,type)
 );
 

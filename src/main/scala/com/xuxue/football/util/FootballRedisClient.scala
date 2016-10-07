@@ -1,16 +1,20 @@
 package com.xuxue.football.util
 
+import java.util.{Calendar, Date, GregorianCalendar}
+
 import com.xuxue.football.servlet.Odds
+import org.slf4j.LoggerFactory
 import redis.clients.jedis.Jedis
 
 import scala.annotation.tailrec
 import scala.util.{Failure, Success, Try}
-import collection.JavaConversions._
 
 /**
   * Created by xuxue on 2016/9/25.
   */
 class FootballRedisClient(val config: Config) {
+
+    val LOG=LoggerFactory.getLogger(classOf[FootballRedisClient])
 
     var redis = {
         val redis = new Jedis(config.redisHost, config.redisPort)
@@ -24,10 +28,16 @@ class FootballRedisClient(val config: Config) {
         if (status!=null&&status.equals("1")) true else false
     }
 
+    def mapKey():String={
+        val date=new GregorianCalendar()
+        val key=date.get(Calendar.YEAR)+"-"+(date.get(Calendar.MONTH)+1)+
+          "-"+date.get(Calendar.DAY_OF_MONTH)
+        config.filterMap+"_"+key
+    }
 
     def updateMap(odds: Odds, value: String): Boolean = {
         val result = Try {
-            redis.hset(config.filterMap, getOddsKey(odds), value)
+            redis.hset(mapKey(), getOddsKey(odds), value)
         }
         result match {
             case Success(v) => {
@@ -35,6 +45,7 @@ class FootballRedisClient(val config: Config) {
             }
             case Failure(ex) => {
                 redis = reconnectRedis(0).get
+                LOG.warn("Update status map failure will try next",ex)
                 updateMap(odds, value)
             }
         }
@@ -42,7 +53,7 @@ class FootballRedisClient(val config: Config) {
 
     def deleteMap(odds: Odds): Boolean = {
         val result = Try {
-            redis.hdel(config.filterMap, getOddsKey(odds))
+            redis.hdel(mapKey(), getOddsKey(odds))
         }
         result match {
             case Success(v) => {
@@ -50,13 +61,14 @@ class FootballRedisClient(val config: Config) {
             }
             case Failure(ex) => {
                 redis = reconnectRedis(0).get
+                LOG.warn("delete status map failure will try later",ex)
                 deleteMap(odds)
             }
         }
     }
 
     private def getOddsStatus(odds: Odds): String = {
-        redis.hget(config.filterMap, getOddsKey(odds))
+        redis.hget(mapKey(), getOddsKey(odds))
 
         val result = Try {
             redis.hget(config.filterMap, getOddsKey(odds))
@@ -66,6 +78,7 @@ class FootballRedisClient(val config: Config) {
                 v
             }
             case Failure(ex) => {
+                LOG.warn("Get odds status failure will try later",ex)
                 redis = reconnectRedis(0).get
                 getOddsStatus(odds)
             }
@@ -77,9 +90,9 @@ class FootballRedisClient(val config: Config) {
     }
 
     /**
-      *
-      * @param num
-      * @return
+      * redis连接重试
+      * @param num 重试的次数
+      * @return redis连接
       */
     @tailrec
     final def reconnectRedis(num: Int): Try[Jedis] = {
@@ -97,4 +110,7 @@ class FootballRedisClient(val config: Config) {
         }
     }
 
+    def close(): Unit ={
+        this.redis.close()
+    }
 }

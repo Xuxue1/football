@@ -20,7 +20,7 @@ import scala.util.{Failure, Success, Try}
 
 /**
   *
-  * Created by xuxue on 2016/9/23.
+  * @author xuxue
   */
 class AokeFootballClient {
 
@@ -28,7 +28,7 @@ class AokeFootballClient {
 
     val client = HttpClients.custom().build()
 
-    val dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+    val dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm")
 
     /**
       * 请求这个日期对应的球探网足球赔率所对应的页面 返回这个页面的所有
@@ -42,29 +42,29 @@ class AokeFootballClient {
         val get = new HttpGet(url)
         get.setConfig(AokeFootballClient.defaultHttpConfig)
         val document = AokeFootballClient.getPage(client, get, "gb2312", 0)
-        val elementContent = document.select("#livescore_table").select("tr");
+        val elementContent = document.select("#livescore_table").select("tr")
         LOG.info("size {}", elementContent.size())
-        for (e <- elementContent if e.attr("matchid").size > 0) yield {
-           val value=Try{
-               val tds = e.select("td")
-               val game = new Game();
-               game.id = e.attr("matchid").toInt
-               game.game = tds.get(1).text();
-               game.source=1;
-               game.gameTime = dateFormat.parse((date.getYear + 1900) + "-" + tds.get(2).text())
-               game.status = tds.get(3).text().replaceAll("\"", "")
-               game.morder = tds.get(4).select(".rank.float_l").text()
-               game.mteam = tds.get(4).select(".ctrl_homename").text()
-               game.score = tds.get(5).text()
-               game.oteam = tds.get(6).select(".ctrl_awayname").text()
-               game.oorder = tds.get(6).select(".rank.float_r").text()
-               game
-           }
+        for (e <- elementContent if e.attr("matchid").nonEmpty) yield {
+            val value = Try {
+                val tds = e.select("td")
+                val game = new Game()
+                game.id = e.attr("matchid").toInt
+                game.game = tds.get(1).text()
+                game.source = 1
+                game.gameTime = dateFormat.parse((date.getYear + 1900) + "-" + tds.get(2).text())
+                game.status = tds.get(3).text().replaceAll("\"", "")
+                game.morder = tds.get(4).select(".rank.float_l").text()
+                game.mteam = tds.get(4).select(".ctrl_homename").text()
+                game.score = tds.get(5).text()
+                game.oteam = tds.get(6).select(".ctrl_awayname").text()
+                game.oorder = tds.get(6).select(".rank.float_r").text()
+                game
+            }
             value match {
-                case Failure(ex)=>{
-                    LOG.info("A game failed parse because "+ex.getMessage,ex)
+                case Failure(ex) => {
+                    LOG.info("A game failed parse because " + ex.getMessage, ex)
                 }
-                case Success(v)=>{
+                case Success(v) => {
                     //do nothing
                 }
             }
@@ -80,7 +80,7 @@ class AokeFootballClient {
       * @return 携带赔率的比赛
       */
     def requestOddsPage(game: Game): Try[Game] = {
-        val value=Try{
+        val value = Try {
             val url = AokeFootballClient.getOddsPageURL(game)
             val get = new HttpGet(url)
             get.setConfig(AokeFootballClient.defaultHttpConfig)
@@ -88,17 +88,17 @@ class AokeFootballClient {
             val element = document.select("#lunci > div.qk_two").select("span")
             game.turn = element.text()
             val ajaxURL = AokeFootballClient.getOddsAjaxURL(game, 0)
-            val ajaxGet = new HttpGet(ajaxURL);
+            val ajaxGet = new HttpGet(ajaxURL)
             val ajaxDocument = AokeFootballClient.getAjaxPage(client, game, 3)
             val elements = ajaxDocument.select("tr")
             analyzeOddsTable(elements, game, 1)
         }
 
         value match {
-            case Failure(ex)=>{
-                LOG.info("A game failed request odds because "+ex.getMessage,ex)
+            case Failure(ex) => {
+                LOG.info("A game failed request odds because " + ex.getMessage, ex)
             }
-            case Success(v)=>{
+            case Success(v) => {
                 //do nothing
             }
         }
@@ -112,18 +112,18 @@ class AokeFootballClient {
       * @return 携带盘口信息的比赛
       */
     def requestPankouPage(game: Game): Try[Game] = {
-       val value=Try{
-           val get = new HttpGet(AokeFootballClient.getPanKouPageURL(game))
-           get.setConfig(AokeFootballClient.defaultHttpConfig)
-           val document = AokeFootballClient.getPage(client, get, "gbk", 0)
-           val elements = document.select("#datatable1 > table").select("tr");
-           analyzeOddsTable(elements, game, 2)
-       }
+        val value = Try {
+            val get = new HttpGet(AokeFootballClient.getPanKouPageURL(game))
+            get.setConfig(AokeFootballClient.defaultHttpConfig)
+            val document = AokeFootballClient.getPage(client, get, "gbk", 0)
+            val elements = document.select("#datatable1 > table").select("tr")
+            analyzeOddsTable(elements, game, 2)
+        }
         value match {
-            case Failure(ex)=>{
-                LOG.info("A game failed request panKou because "+ex.getMessage,ex)
+            case Failure(ex) => {
+                LOG.info("A game failed request panKou because " + ex.getMessage, ex)
             }
-            case Success(v)=>{
+            case Success(v) => {
                 //do nothing
             }
         }
@@ -136,16 +136,17 @@ class AokeFootballClient {
       * @return 网站默认的所有单场比赛
       */
     def requestGameDanChang(): mutable.Buffer[Try[Game]] = {
-        val qichi = AokeFootballClient.getDanChangPageURLs();
+        val qichi = AokeFootballClient.getDanChangPageURLs()
         val all = qichi.map {
             q =>
                 val request = new HttpGet("http://www.okooo.com/livecenter/danchang/?date=" + q)
                 request.setConfig(AokeFootballClient.defaultHttpConfig)
                 val document = AokeFootballClient.getPage(client, request, "gb2312", 0)
-                val elements = document.select("#livescore_table > table").select("tr");
-                for (e <- elements if (e.attr("matchid") != null)) yield {
-                    Try{
+                val elements = document.select("#livescore_table > table").select("tr")
+                for (e <- elements if e.attr("matchid").nonEmpty) yield {
+                    Try {
                         val game = new Game
+                        val tds=e.select("td")
                         game.source = 1
                         game.id = e.attr("matchid").toInt
                         game.danchang = q
@@ -161,15 +162,15 @@ class AokeFootballClient {
       * @return 默认的所有足彩页面
       */
     def requestGameZuCai(): mutable.Buffer[Try[Game]] = {
-        val qichi = AokeFootballClient.getZuCaiPageURLs();
+        val qichi = AokeFootballClient.getZuCaiPageURLs()
         val all = qichi.map {
             q =>
                 val request = new HttpGet("http://www.okooo.com/livecenter/danchang/?date=" + q)
                 request.setConfig(AokeFootballClient.defaultHttpConfig)
                 val document = AokeFootballClient.getPage(client, request, "gb2312", 0)
-                val elements = document.select("#livescore_table > table").select("tr");
+                val elements = document.select("#livescore_table > table").select("tr")
                 for (e <- elements if (e.attr("matchid") != null)) yield {
-                    Try{
+                    Try {
                         val game = new Game
                         game.source = 1
                         game.id = e.attr("matchid").toInt
@@ -179,6 +180,24 @@ class AokeFootballClient {
                 }
         }
         all.flatMap(_.toList)
+    }
+
+
+    def requestGameJingcai(date:Date):mutable.Buffer[Try[Game]]={
+        val url=AokeFootballClient.getJingCaiPageURLByDate(date)
+        val get=new HttpGet(url)
+        get.setConfig(AokeFootballClient.defaultHttpConfig)
+        val page=AokeFootballClient.getPage(client,get,"gb2312",0)
+        val trs=page.select("#livescore_table > table").select("tr")
+        for (e <- trs if (e.attr("matchid") != null)) yield {
+            Try {
+                val game = new Game
+                game.source = 1
+                game.id = e.attr("matchid").toInt
+                game.jingcai=1
+                game
+            }
+        }
     }
 
     /**
@@ -198,6 +217,10 @@ class AokeFootballClient {
       */
     def requestGameZuCai(year: Int) = {
 
+    }
+
+    def close(): Unit = {
+        client.close()
     }
 
 
@@ -251,7 +274,7 @@ class AokeFootballClient {
       */
     private def analyzeOddsTable(elements: Elements, game: Game, oddsType: Int): Game = {
         for (element <- elements) {
-            val tds = element.select("td");
+            val tds = element.select("td")
             val companyName = tds.get(1).text()
             if (CompanyMap.map.get(companyName) != null) {
                 val odds = new Odds()
@@ -259,7 +282,7 @@ class AokeFootballClient {
                 odds.id = game.id
                 odds.company = companyName
                 val date = parseOddsTime(tds.get(2).attr("title"), game.gameTime)
-                LOG.warn(tds.get(2).attr("title")+"    "+dateFormat.format(date.get))
+                LOG.warn(tds.get(2).attr("title") + "    " + dateFormat.format(date.get))
                 odds.time = date match {
                     case Success(v) => v
                     case Failure(ex) => {
@@ -283,10 +306,10 @@ class AokeFootballClient {
 object AokeFootballClient {
 
     val LOG = LoggerFactory.getLogger(classOf[AokeFootballClient])
-    val homePageBaseURL = "http://www.okooo.com/livecenter/football/";
-    val jingCaiBaseURL = "http://www.okooo.com/livecenter/jingcai/";
-    val danChangBaseURL = "http://www.okooo.com/livecenter/danchang/";
-    val zuCaiBaseURL = "http://www.okooo.com/livecenter/zucai/";
+    val homePageBaseURL = "http://www.okooo.com/livecenter/football/"
+    val jingCaiBaseURL = "http://www.okooo.com/livecenter/jingcai/"
+    val danChangBaseURL = "http://www.okooo.com/livecenter/danchang/"
+    val zuCaiBaseURL = "http://www.okooo.com/livecenter/zucai/"
 
     def getHomePageURLByDate(date: Date): String = {
         val calendar = new GregorianCalendar()
@@ -296,17 +319,14 @@ object AokeFootballClient {
                 fillNumber(calendar.get(Calendar.DAY_OF_MONTH))
     }
 
-    def getOddsPageURL(game: Game): String = {
-        return "http://www.okooo.com/soccer/match/" + game.id + "/odds/"
-    }
+    def getOddsPageURL(game: Game): String = "http://www.okooo.com/soccer/match/" + game.id + "/odds/"
 
-    def getPanKouPageURL(game: Game): String = {
-        return "http://www.okooo.com/soccer/match/" + game.id + "/ah/"
-    }
 
-    def getOddsAjaxURL(game: Game, page: Int): String = {
-        return "http://www.okooo.com/soccer/match/" + game.id + "/odds/ajax/?page=" + page + "&companytype=BaijiaBooks&type=1"
-    }
+    def getPanKouPageURL(game: Game): String = "http://www.okooo.com/soccer/match/" + game.id + "/ah/"
+
+
+    def getOddsAjaxURL(game: Game, page: Int): String = "http://www.okooo.com/soccer/match/" + game.id + "/odds/ajax/?page=" + page + "&companytype=BaijiaBooks&type=1"
+
 
     def getPage(client: CloseableHttpClient, httpUriRequest: HttpUriRequest, charset: String, times: Int): Document = {
         val result =
@@ -341,7 +361,7 @@ object AokeFootballClient {
                 Thread.sleep(200)
             }
         }
-        content = "<table>" + content + "</table>";
+        content = "<table>" + content + "</table>"
         Jsoup.parse(content, getOddsAjaxURL(game, 0))
     }
 

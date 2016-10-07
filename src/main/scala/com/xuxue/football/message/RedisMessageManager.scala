@@ -21,6 +21,19 @@ class RedisMessageManager extends MessageManager{
         redis
     }
 
+    def init():Unit={
+        val value=Try{
+            redis.del(conf.gameTaskKey)
+        }
+        value match {
+            case Success(v) => true
+            case Failure(ex) => {
+                reconnectRedis(0)
+                init()
+            }
+        }
+    }
+
     override def push(game: Game): Boolean ={
         val value=Try{
             redis.lpush(conf.gameTaskKey,G.toJson(game))

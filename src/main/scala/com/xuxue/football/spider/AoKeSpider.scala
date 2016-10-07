@@ -44,8 +44,16 @@ class AoKeSpider(init: Boolean, var startTime: Date, var endTime: Date) extends 
     }
 
     override def run(): Unit = {
-        spiderInit()
-        processFootballMassage()
+        if(startTime==null && endTime==null){
+            while(true){
+                spiderInit()
+                processFootballMassage()
+                new OddsTypeUpdate().run()
+            }
+        }else{
+            spiderInit()
+            processFootballMassage()
+        }
     }
 
 
@@ -57,6 +65,7 @@ class AoKeSpider(init: Boolean, var startTime: Date, var endTime: Date) extends 
         game.processStatus match {
             case -1=>{
                 //接收到位-1的信号 表示程序要退出
+                messageManager.push(endGame)
                 return
             }
             case 1 => {
@@ -64,12 +73,9 @@ class AoKeSpider(init: Boolean, var startTime: Date, var endTime: Date) extends 
                     val r = aokeFootballClient.requestOddsPage(game)
                     aokeFootballClient.requestPankouPage(r.get).get
                 } match {
-                    case Success(v) => {
-                        pipleLine.pipeline(v)
-                    }
-                    case Failure(ex) => {
-                        LOG.info("Fail download a game",ex)
-                    }
+                    case Success(v) => pipleLine.pipeline(v)
+                    case Failure(ex) => LOG.info("Fail download a game",ex)
+
                 }
                 if (game.flage == 1) {
                     val games=requestNexDate(game.gameTime)
@@ -78,9 +84,7 @@ class AoKeSpider(init: Boolean, var startTime: Date, var endTime: Date) extends 
                             value.last.flage=1
                             value.foreach(messageManager.push(_))
                         }
-                        case Failure(ex)=>{
-                            messageManager.push(endGame)
-                        }
+                        case Failure(ex)=>messageManager.push(endGame)
                     }
                 }
             }
@@ -131,6 +135,7 @@ class AoKeSpider(init: Boolean, var startTime: Date, var endTime: Date) extends 
                 g.processStatus=1;
                 g
             }
+            messageManager.init()
             result.last.flage = 1
             result.foreach(messageManager.push(_))
         }
