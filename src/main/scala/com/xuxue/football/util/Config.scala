@@ -1,5 +1,6 @@
 package com.xuxue.football.util
 
+import java.io.FileInputStream
 import java.util.Properties
 
 import com.xuxue.football.util.Loan.use
@@ -19,7 +20,7 @@ object Config{
     Integer.parseInt(s)
   }
   def apply(fileName:String): Config = {
-    use(getClass.getClassLoader.getResourceAsStream(fileName)){
+    use(new FileInputStream(fileName)){
       stream=>
         val properties=new Properties()
         properties.load(stream)
@@ -33,7 +34,7 @@ object Config{
     }
   }
   def main(args: Array[String]): Unit = {
-    val config=Config("conf.properties")
+    val config=Config("conf/aoke.conf")
     println(config)
   }
 }

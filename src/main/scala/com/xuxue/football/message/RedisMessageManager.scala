@@ -13,7 +13,7 @@ import collection.JavaConversions._
   */
 class RedisMessageManager extends MessageManager{
 
-    val conf=Config("conf.properties")
+    val conf=Config("conf/aoke.conf")
     val G=new Gson()
     var redis={
         val redis = new Jedis(conf.redisHost, conf.redisPort)
@@ -90,7 +90,7 @@ class RedisMessageManager extends MessageManager{
 object RedisMessageManager{
 
     def main(args: Array[String]): Unit = {
-        val conf=Config("conf.properties")
+        val conf=Config("conf/aoke.conf")
 
         val client=new Jedis(conf.redisHost,conf.redisPort)
         client.connect()

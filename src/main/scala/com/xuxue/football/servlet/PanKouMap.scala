@@ -13,7 +13,7 @@ import scala.util.{Failure, Success, Try}
   */
 object PanKouMap {
 
-    val config=Config("conf.properties")
+    val config=Config("conf/aoke.conf")
 
     val map={
         val map=new util.HashMap[String,Integer]();

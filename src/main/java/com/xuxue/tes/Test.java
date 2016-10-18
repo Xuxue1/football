@@ -1,15 +1,28 @@
 package com.xuxue.tes;
 
+import org.apache.http.HttpHost;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.nodes.Entities;
+import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
+import java.math.BigDecimal;
+import java.text.NumberFormat;
+
 
 /**
  * Created by liuwei on 2016/9/26.
@@ -20,8 +33,10 @@ public class Test {
 
 
     public static void main(String[] args)throws Exception{
-
-        String s="{\"url\":\"https://img.alicdn.com/imgextra/i1/2266950171/TB2wDE2gVXXXXXTXXXXXXXXXXXX_!!2266950171.jpg\",\"taskId\":26199,\"level\":4,\"referer\":\"https://detail.tmall.com/item.htm?id\\u003d524053480750\\u0026rn\\u003d92f583c0e65b1272cca96f0780440ce3\\u0026abbucket\\u003d0\",\"store\":true,\"ossType\":0,\"accessKey\":\"AuY3mCfqPXETorkE\",\"secretKey\":\"cMWaCnGRl7wctiWGngPIVmDhjDK0HA\",\"endpoint\":\"http://oss-cn-beijing.aliyuncs.com\",\"bucket\":\"crawler-img\"}";
+        NumberFormat f=NumberFormat.getInstance();
+        f.setMaximumFractionDigits(10);
+        Double d = new Double(1234567890.1234);
+        System.out.println(f.format(d));
 
     }
 

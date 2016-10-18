@@ -18,7 +18,7 @@ class OddsTypeUpdate extends TimerTask {
     override def run(): Unit = {
 
         val client=new AokeFootballClient
-        val install=new MySQLGameInsert(Config("conf.properties"));
+        val install=new MySQLGameInsert(Config("conf/aoke.conf"));
         client.requestGameZuCai().map {
             _ match {
                 case Success(v) => install.pipeline(v)

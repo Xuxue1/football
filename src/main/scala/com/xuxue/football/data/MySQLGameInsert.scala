@@ -37,6 +37,8 @@ class MySQLGameInsert(val config: Config) {
             if (!filter.filter(odd)) {
                 saveOdds(game, odd)
                 filter.updateMap(odd, "1")
+            }else{
+                LOG.info("odds exist");
             }
         }
     }
@@ -62,11 +64,12 @@ class MySQLGameInsert(val config: Config) {
          }
     }
 
-        val result=Try{
+    def update(sql:String,data:Array[Any]):Try[Int]={
+        Try{
             use(connection.prepareStatement("insert into game value(?,?,?,?,?,?,?,?,?,?,?,?,?,?)")){
                 pre=>
-                    for(i <- 0 to array.length){
-                        pre.setObject(i+1,array(i))
+                    for(i <- 0 to data.length){
+                        pre.setObject(i+1,data(i))
                     }
                     pre.executeUpdate()
             }
@@ -107,6 +110,7 @@ class MySQLGameInsert(val config: Config) {
     private def saveOdds(game: Game, odds: Odds): Unit = {
         val result = Try {
             use(connection.prepareStatement("insert into odds values(?,?,?,?,?,?,?,?)")) {
+                LOG.info("odds= {}"+odds.toString)
                 pre =>
                     pre.setInt(1, game.source)
                     pre.setInt(2, game.id)
@@ -126,4 +130,5 @@ class MySQLGameInsert(val config: Config) {
         }
     }
 }
+
 

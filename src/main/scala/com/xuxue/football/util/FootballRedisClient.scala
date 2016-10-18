@@ -2,7 +2,7 @@ package com.xuxue.football.util
 
 import java.util.{Calendar, Date, GregorianCalendar}
 
-import com.xuxue.football.servlet.Odds
+import com.xuxue.football.servlet.{CompanyMap, Odds}
 import org.slf4j.LoggerFactory
 import redis.clients.jedis.Jedis
 
@@ -68,10 +68,9 @@ class FootballRedisClient(val config: Config) {
     }
 
     private def getOddsStatus(odds: Odds): String = {
-        redis.hget(mapKey(), getOddsKey(odds))
 
         val result = Try {
-            redis.hget(config.filterMap, getOddsKey(odds))
+            redis.hget(mapKey(), getOddsKey(odds))
         }
         result match {
             case Success(v) => {
@@ -86,7 +85,7 @@ class FootballRedisClient(val config: Config) {
     }
 
     private def getOddsKey(odds: Odds): String = {
-        odds.source + "_" + odds.id + "_" + odds.company + "_" + odds.oddsType
+        odds.source + "_" + odds.id + "_" + CompanyMap.map.get(odds.company) + "_" + odds.oddsType
     }
 
     /**

@@ -85,10 +85,9 @@ class AokeFootballClient {
             val get = new HttpGet(url)
             get.setConfig(AokeFootballClient.defaultHttpConfig)
             val document = AokeFootballClient.getPage(client, get, "gb2312", 0)
-            val element = document.select("#lunci > div.qk_two").select("span")
+            var element = document.select("#lunci > div.qk_two").select("span")
+            if(element.isEmpty) element=document.select("#lunci > div:nth-child(1) > span");
             game.turn = element.text()
-            val ajaxURL = AokeFootballClient.getOddsAjaxURL(game, 0)
-            val ajaxGet = new HttpGet(ajaxURL)
             val ajaxDocument = AokeFootballClient.getAjaxPage(client, game, 3)
             val elements = ajaxDocument.select("tr")
             analyzeOddsTable(elements, game, 1)
@@ -189,10 +188,11 @@ class AokeFootballClient {
         get.setConfig(AokeFootballClient.defaultHttpConfig)
         val page=AokeFootballClient.getPage(client,get,"gb2312",0)
         val trs=page.select("#livescore_table > table").select("tr")
-        for (e <- trs if (e.attr("matchid") != null)) yield {
+        for (e <- trs if (e.attr("matchid") != null && e.attr("matchid").length!=0)) yield {
             Try {
                 val game = new Game
                 game.source = 1
+                println(e.attr("matchid"))
                 game.id = e.attr("matchid").toInt
                 game.jingcai=1
                 game
@@ -291,9 +291,9 @@ class AokeFootballClient {
                     }
                 }
                 odds.oddsType = oddsType
-                odds.data1 = tds.get(1).text()
-                odds.data2 = tds.get(2).text()
-                odds.data3 = tds.get(3).text()
+                odds.data1 = tds.get(2).text()
+                odds.data2 = tds.get(3).text()
+                odds.data3 = tds.get(4).text()
                 game.addOdds(odds)
             }
         }
@@ -358,7 +358,7 @@ object AokeFootballClient {
             continue = pageContent.length > 500
             if (continue) {
                 content += pageContent
-                Thread.sleep(200)
+                Thread.sleep(700)
             }
         }
         content = "<table>" + content + "</table>"
@@ -394,7 +394,7 @@ object AokeFootballClient {
         val calendar = new GregorianCalendar()
         calendar.setTime(date)
         jingCaiBaseURL + "?date=" + calendar.get(Calendar.YEAR) + "-" +
-                fillNumber(calendar.get(Calendar.MONTH) + 1) +
+                fillNumber(calendar.get(Calendar.MONTH) + 1) + "-"+
                 fillNumber(calendar.get(Calendar.DAY_OF_MONTH))
     }
 

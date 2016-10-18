@@ -12,7 +12,7 @@ import redis.clients.jedis.Jedis
 class RedisKeyClean extends TimerTask{
 
   override def run(): Unit = {
-    val config=Config("conf.properties")
+    val config=Config("conf/aoke.conf")
     val redis=new Jedis(config.redisHost,config.redisPort)
     redis.connect()
     val calendar=new GregorianCalendar();
